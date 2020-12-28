@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cheng.shiro.dao.UserDao">
+    <insert id="insert" parameterType="User" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+      insert into t_user values(#{id},#{username},#{password},#{salt})
+    </insert>
+
+    <select id="getUserByUsername" parameterType="string" resultType="User">
+        select id,username,password,salt from t_user where username = #{username}
+    </select>
+
+    <resultMap id="userMap" type="User">
+        <id column="userid" property="id"/>
+        <result column="username" property="username"/>
+        <collection property="roles" javaType="list" ofType="Role">
+            <id column="roleid" property="id"/>
+            <result column="rolename" property="name"/>
+        </collection>
+    </resultMap>
+
+    <select id="getRolesByUserName" parameterType="string" resultMap="userMap">
+      SELECT
+      	a.username,
+      	a.`password`,
+      	a.salt,
+      	a.id AS userid,
+      	b.roleid,
+      	c.`name` AS rolename
+      FROM
+      	t_user a
+      	LEFT JOIN t_user_role b ON a.id = b.userid
+      	LEFT JOIN t_role c ON b.roleid = c.id
+      WHERE
+      	a.username = #{username}
+    </select>
+
+    <select id="getPermsByRoleId" parameterType="string" resultType="Perms">
+      SELECT
+      	c.id,
+      	c.`name`,
+      	c.url
+      FROM
+      	t_role a,
+      	t_role_permis b,
+      	t_pers c
+      WHERE
+      	a.id = b.roleid
+      	AND b.permsid = c.id
+      	AND a.id = #{roleId}
+    </select>
+
+</mapper>
